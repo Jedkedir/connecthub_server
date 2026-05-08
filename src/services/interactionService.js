@@ -1,3 +1,4 @@
+import { createDomainEvent, NOTIFICATION_EVENTS, eventBus } from '../events/eventBus.js';
 import { interactionRepository } from '../repositories/interactionRepository.js';
 import { postRepository } from '../repositories/postRepository.js';
 import { AppError } from '../utils/AppError.js';
@@ -14,7 +15,7 @@ const isDuplicateKey = (error) => error?.code === 11000;
 
 export const interactionService = {
   likePost: async (userId, postId) => {
-    await ensurePost(postId);
+    const post = await ensurePost(postId);
 
     try {
       await interactionRepository.createLike(userId, postId);
@@ -24,6 +25,15 @@ export const interactionService = {
       }
       throw error;
     }
+
+    eventBus.emit(
+      NOTIFICATION_EVENTS.POST_LIKED,
+      createDomainEvent(NOTIFICATION_EVENTS.POST_LIKED, {
+        senderId: userId,
+        recipientId: post.authorId,
+        postId
+      })
+    );
 
     return postRepository.increment(postId, 'likesCount', 1);
   },
@@ -39,12 +49,23 @@ export const interactionService = {
   },
 
   addComment: async (userId, postId, payload) => {
-    await ensurePost(postId);
+    const post = await ensurePost(postId);
     const comment = await interactionRepository.createComment({
       userId,
       postId,
       content: payload.content
     });
+
+    eventBus.emit(
+      NOTIFICATION_EVENTS.POST_COMMENTED,
+      createDomainEvent(NOTIFICATION_EVENTS.POST_COMMENTED, {
+        senderId: userId,
+        recipientId: post.authorId,
+        postId,
+        commentId: comment._id
+      })
+    );
+
     await postRepository.increment(postId, 'commentsCount', 1);
     return comment.populate('userId', 'username profilePic');
   },

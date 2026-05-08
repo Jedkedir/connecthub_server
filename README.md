@@ -10,6 +10,8 @@ ConnectHub is a production-ready REST API backend for a social media platform bu
 - Posts with media URLs, counters, and indexed author queries
 - Likes, comments, and bookmarks with duplicate prevention
 - Follow requests, accept/reject flow, and unfollow
+- Event-driven notifications for likes, comments, follow requests, and accepted follows
+- Optional Socket.IO real-time notification delivery
 - Personalized, global trending, and explore feeds
 - Cursor-based pagination
 - Joi request validation
@@ -105,6 +107,12 @@ Follow:
 - `POST /api/v1/follow/reject`
 - `POST /api/v1/follow/unfollow`
 
+Notifications:
+
+- `GET /api/v1/notifications`
+- `PATCH /api/v1/notifications/:id/read`
+- `PATCH /api/v1/notifications/read-all`
+
 Feed:
 
 - `GET /api/v1/feed/personalized`
@@ -120,4 +128,18 @@ Feed:
     "message": "Human readable message"
   }
 }
+```
+
+## Real-Time Notifications
+
+Socket.IO is attached to the HTTP server. Clients can join their user room with:
+
+```js
+const socket = io('http://localhost:5000', {
+  query: { userId: '<authenticated-user-id>' }
+});
+
+socket.on('notification', (notification) => {
+  console.log(notification);
+});
 ```

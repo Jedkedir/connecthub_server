@@ -1,16 +1,20 @@
 import { env } from './config/env.js';
 import { connectDatabase, disconnectDatabase } from './config/database.js';
 import { app } from './app.js';
+import { initSocketServer } from './loaders/socket.js';
+import { initializeNotificationListeners } from './services/notification.service.js';
 import { logger } from './utils/logger.js';
 
 let server;
 
 const start = async () => {
   await connectDatabase();
+  initializeNotificationListeners();
 
   server = app.listen(env.port, () => {
     logger.info('ConnectHub API listening', { port: env.port, environment: env.nodeEnv });
   });
+  initSocketServer(server);
 };
 
 const shutdown = async (signal) => {

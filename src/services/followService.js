@@ -1,3 +1,4 @@
+import { createDomainEvent, NOTIFICATION_EVENTS, eventBus } from '../events/eventBus.js';
 import { followRepository } from '../repositories/followRepository.js';
 import { userRepository } from '../repositories/userRepository.js';
 import { AppError } from '../utils/AppError.js';
@@ -27,7 +28,15 @@ export const followService = {
     }
 
     try {
-      return await followRepository.createRequest(requesterId, targetUserId);
+      const request = await followRepository.createRequest(requesterId, targetUserId);
+      eventBus.emit(
+        NOTIFICATION_EVENTS.FOLLOW_REQUEST,
+        createDomainEvent(NOTIFICATION_EVENTS.FOLLOW_REQUEST, {
+          senderId: requesterId,
+          recipientId: targetUserId
+        })
+      );
+      return request;
     } catch (error) {
       if (isDuplicateKey(error)) {
         throw new AppError('FOLLOW_REQUEST_EXISTS', 'A pending follow request already exists.', 409);
@@ -52,6 +61,14 @@ export const followService = {
       if (isDuplicateKey(error)) return request;
       throw error;
     }
+
+    eventBus.emit(
+      NOTIFICATION_EVENTS.FOLLOW_ACCEPTED,
+      createDomainEvent(NOTIFICATION_EVENTS.FOLLOW_ACCEPTED, {
+        senderId: recipientId,
+        recipientId: requesterId
+      })
+    );
 
     return request;
   },
