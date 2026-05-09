@@ -13,10 +13,11 @@ export const initSocketServer = (server) => {
   });
 
   io.on('connection', (socket) => {
+    logger.info('Socket connection attempt', { socketId: socket.id, userId });
     const { userId } = socket.handshake.query;
-
     if (!userId) {
       socket.disconnect(true);
+      logger.warn('Socket connection rejected due to missing userId', { socketId: socket.id });
       return;
     }
 

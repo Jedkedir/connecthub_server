@@ -6,6 +6,7 @@ import { Comment } from './models/Comment.js';
 import { Follow } from './models/Follow.js';
 import { FollowRequest } from './models/FollowRequest.js';
 import { Like } from './models/Like.js';
+import { Notification } from './models/Notification.js';
 import { Post } from './models/Post.js';
 import { User } from './models/User.js';
 import { logger } from './utils/logger.js';
@@ -19,6 +20,7 @@ const seed = async () => {
     Follow.deleteMany({}),
     FollowRequest.deleteMany({}),
     Like.deleteMany({}),
+    Notification.deleteMany({}),
     Post.deleteMany({}),
     User.deleteMany({})
   ]);
