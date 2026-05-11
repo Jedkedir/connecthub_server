@@ -8,7 +8,7 @@ export const postController = {
   }),
 
   getById: asyncHandler(async (req, res) => {
-    const post = await postService.getPost(req.params.id);
+    const post = await postService.getPost(req.user._id, req.params.id);
     res.json({ data: { post } });
   }),
 
@@ -18,7 +18,7 @@ export const postController = {
   }),
 
   getByUser: asyncHandler(async (req, res) => {
-    const result = await postService.getPostsByUser(req.params.userId, req.query);
+    const result = await postService.getPostsByUser(req.user._id, req.params.userId, req.query);
     res.json(result);
   })
 };

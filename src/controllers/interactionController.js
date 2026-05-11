@@ -35,5 +35,9 @@ export const interactionController = {
   bookmarks: asyncHandler(async (req, res) => {
     const result = await interactionService.getBookmarks(req.user._id, req.query);
     res.json(result);
+  }),
+  likedPosts: asyncHandler(async (req, res) => {
+    const result = await interactionService.getLikedPosts(req.user._id, req.query);
+    res.json(result);
   })
 };

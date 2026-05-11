@@ -8,12 +8,12 @@ export const feedController = {
   }),
 
   global: asyncHandler(async (req, res) => {
-    const result = await feedService.global(req.query);
+    const result = await feedService.global(req.user._id, req.query);
     res.json(result);
   }),
 
   explore: asyncHandler(async (req, res) => {
-    const result = await feedService.explore(req.query);
+    const result = await feedService.explore(req.user._id, req.query);
     res.json(result);
   })
 };

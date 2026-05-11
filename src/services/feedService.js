@@ -25,7 +25,7 @@ export const feedService = {
       return { data: [], pageInfo: { hasMore: false, nextCursor: null } };
     }
 
-    const posts = await postRepository.findRecent(
+    const posts = await postRepository.findRecent(userId,
       {
         authorId: { $in: followingIds },
         ...buildCreatedAtCursorFilter(query.cursor)
@@ -36,16 +36,16 @@ export const feedService = {
     return postService.toPaginationResult(posts, limit);
   },
 
-  global: async (query) => {
+  global: async (userId, query) => {
     const limit = getLimit(query.limit);
     const cursor = decodeCursor(query.cursor);
-    const posts = await postRepository.aggregateGlobalFeed(cursor, limit);
+    const posts = await postRepository.aggregateGlobalFeed(userId,cursor, limit);
     return postService.toPaginationResult(posts, limit, buildGlobalCursor);
   },
 
-  explore: async (query) => {
+  explore: async (userId, query) => {
     const limit = getLimit(query.limit);
-    const posts = await postRepository.findExplore(query.q, query.cursor, limit);
+    const posts = await postRepository.findExplore(userId, query.q, query.cursor, limit);
     return postService.toPaginationResult(posts, limit);
   }
 };

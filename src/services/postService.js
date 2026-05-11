@@ -17,10 +17,10 @@ export const postService = {
       mediaUrls: payload.mediaUrls || []
     }),
 
-  getPost: async (postId) => {
+  getPost: async (userId, postId) => {
     const post = await postRepository.incrementView(postId);
     if (!post) throw new AppError('POST_NOT_FOUND', 'Post not found.', 404);
-    return postRepository.findById(postId);
+    return postRepository.findById(userId, postId);
   },
 
   deletePost: async (userId, postId) => {
@@ -35,11 +35,10 @@ export const postService = {
     return { deleted: true };
   },
 
-  getPostsByUser: async (userId, query) => {
+  getPostsByUser: async (currentUserId, userId, query) => {
     const limit = getLimit(query.limit);
-    const rows = await postRepository.findByUser(userId, query.cursor, limit);
+    const rows = await postRepository.findByUser(currentUserId,userId, query.cursor, limit);
     return toPaginationResult(rows, limit);
   },
-
   toPaginationResult
 };

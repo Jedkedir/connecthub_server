@@ -108,5 +108,12 @@ export const interactionService = {
     return postService.toPaginationResult(bookmarks, limit, (bookmark) =>
       getCreatedAtCursorFromDoc(bookmark)
     );
+  },
+  getLikedPosts: async (userId, query) => {
+    const limit = getLimit(query.limit);
+    const likedPosts = await interactionRepository.findLikedPostsByUser(userId, query.cursor, limit);
+    return postService.toPaginationResult(likedPosts, limit, (like) =>
+      getCreatedAtCursorFromDoc(like)
+    );
   }
 };
