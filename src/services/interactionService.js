@@ -186,7 +186,7 @@ export const interactionService = {
 
   deleteComment: async (userId, commentId) => {
     const comment = await ensureComment(commentId);
-    if (comment.userId.toString() !== userId.toString()) {
+    if (comment.userId._id.toString() !== userId.toString()) {
       throw new AppError('FORBIDDEN', 'You can only delete your own comments.', 403);
     }
 
@@ -195,7 +195,7 @@ export const interactionService = {
       : await interactionRepository.countReplies(comment._id);
     const deletedCount = 1 + replyCount;
 
-    await interactionRepository.deleteCommentTree(comment._id);
+    await interactionRepository.deleteComment(comment._id);
     await postRepository.increment(comment.postId, 'commentsCount', -deletedCount);
 
     if (comment.parentCommentId) {
