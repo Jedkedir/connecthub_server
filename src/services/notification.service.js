@@ -1,4 +1,5 @@
 import { NOTIFICATION_EVENTS, eventBus } from '../events/eventBus.js';
+import { interactionRepository } from '../repositories/interactionRepository.js';
 import { postRepository } from '../repositories/postRepository.js';
 import { notificationRepository } from '../repositories/notificationRepository.js';
 import { AppError } from '../utils/AppError.js';
@@ -28,6 +29,11 @@ const createNotification = async ({
   if (postId) {
     const post = await postRepository.findByIdRaw(postId);
     if (!post) return null;
+  }
+
+  if (commentId) {
+    const comment = await interactionRepository.findCommentById(commentId);
+    if (!comment) return null;
   }
 
   try {
@@ -86,6 +92,30 @@ export const initializeNotificationListeners = () => {
       commentId: data.commentId,
       message: 'commented on your post',
       dedupeKey: `COMMENT:${data.commentId}`
+    })
+  );
+
+  runListener(NOTIFICATION_EVENTS.COMMENT_REPLIED, (data) =>
+    createNotification({
+      recipientId: data.recipientId,
+      senderId: data.senderId,
+      type: 'COMMENT',
+      postId: data.postId,
+      commentId: data.commentId,
+      message: 'replied to your comment',
+      dedupeKey: `COMMENT_REPLY:${data.commentId}`
+    })
+  );
+
+  runListener(NOTIFICATION_EVENTS.COMMENT_LIKED, (data) =>
+    createNotification({
+      recipientId: data.recipientId,
+      senderId: data.senderId,
+      type: 'LIKE',
+      postId: data.postId,
+      commentId: data.commentId,
+      message: 'liked your comment',
+      dedupeKey: `COMMENT_LIKE:${data.senderId}:${data.recipientId}:${data.commentId}`
     })
   );
 

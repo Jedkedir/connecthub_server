@@ -18,9 +18,17 @@ router.get('/:id', postController.getById);
 router.delete('/:id', postController.delete);
 router.post('/:id/like', interactionController.like);
 router.post('/:id/unlike', interactionController.unlike);
+router.post('/:id/comment', validate(commentSchema), interactionController.addComment);
 router.post('/:id/comments', validate(commentSchema), interactionController.addComment);
 router.get('/:id/comments', validate(paginationQuery, 'query'), interactionController.getComments);
 router.post('/:id/bookmark', interactionController.bookmark);
 router.delete('/:id/bookmark', interactionController.unbookmark);
+
+// New routes for comment replies and interactions
+router.get('/comments/:commentId/replies', validate(paginationQuery, 'query'), interactionController.getReplies);
+router.post('/comments/:commentId/like', interactionController.likeComment);
+router.post('/comments/:commentId/unlike', interactionController.unlikeComment);
+router.put('/comments/:commentId', validate(commentSchema), interactionController.updateComment);
+router.delete('/comments/:commentId', interactionController.deleteComment);
 
 export default router;
