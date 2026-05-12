@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { User } from "../models/User.js";
+import { Post } from "../models/Post.js";
 import { FollowRequest } from "../models/FollowRequest.js";
 import { Follow } from "../models/Follow.js";
 export const hydrateUser = async (user, currentUser_id) => {
@@ -17,10 +18,12 @@ export const hydrateUser = async (user, currentUser_id) => {
     requesterId: currentUser_id,
     targetId: user._id,
   });
-
+ // Add the number of posts from this user
+  const postCount = await Post.countDocuments({ authorId: user._id });
   return {
     ...userObj, 
     isFollowing: !!isFollowing,
     isPending: !!pendingRequest,
+    postCount: postCount,
   };
 };
