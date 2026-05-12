@@ -8,7 +8,6 @@ export const postRepository = {
   findById: async (userId, id) =>{
     const post = await Post.findById(id).populate("authorId", "username profilePic bio");
     if (!post) return null;
-    console.log('Post found for ID:', id, post);
     const hydrated = await hydratePostInteractions([post], userId);
     return hydrated[0];
   },
@@ -23,7 +22,6 @@ export const postRepository = {
       .sort({ createdAt: -1, _id: -1 })
       .limit(limit + 1)
       .populate("authorId", "username profilePic")
-      console.log('Posts found for user:', userId, post);
       if (post.length === 0) {
         return [];
       }

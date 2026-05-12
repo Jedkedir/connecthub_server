@@ -8,7 +8,6 @@ export const hydrateFollowInteractions = async (userIds,currentUser) => {
   const Ids = userIds.map(id => new mongoose.Types.ObjectId(id).toString());
   const users = await User.find({ _id: { $in: Ids } }).select('username email profilePic followingCount followersCount').lean();
   if (!users || users.length === 0) {
-    console.log('Users not found for IDs:', Ids);
     return [];
   }
   // Add isFollowing field to each user
