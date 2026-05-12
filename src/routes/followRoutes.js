@@ -12,5 +12,6 @@ router.post('/request', validate(followTargetSchema), followController.request);
 router.post('/accept', validate(followRequesterSchema), followController.accept);
 router.post('/reject', validate(followRequesterSchema), followController.reject);
 router.post('/unfollow', validate(followTargetSchema), followController.unfollow);
-
+router.get('/:id/followers', followController.getFollowers);
+router.get('/:id/following', followController.getFollowing);
 export default router;

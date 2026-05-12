@@ -8,7 +8,7 @@ export const userController = {
   }),
 
   getById: asyncHandler(async (req, res) => {
-    const user = await userService.getUserById(req.params.id);
+    const user = await userService.getUserById(req.params.id, req.user._id);
     res.json({ data: { user } });
   }),
 

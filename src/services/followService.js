@@ -92,5 +92,14 @@ export const followService = {
     await userRepository.incrementFollowing(followerId, -1);
     await userRepository.incrementFollowers(targetUserId, -1);
     return { unfollowed: true };
+  },
+  getFollowers: async (userId) => {
+    const followers = await followRepository.getFollowers(userId);
+    return followers;
+  },
+  getFollowing: async (userId) => {
+    const following = await followRepository.getFollowing(userId);
+    return following;
   }
+
 };

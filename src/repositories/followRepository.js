@@ -1,5 +1,6 @@
 import { Follow } from '../models/Follow.js';
 import { FollowRequest } from '../models/FollowRequest.js';
+import {hydrateFollowInteractions} from '../utils/followHelper.js'
 
 export const followRepository = {
   findFollow: (followerId, followingId) => Follow.findOne({ followerId, followingId }),
@@ -17,5 +18,15 @@ export const followRepository = {
       { requesterId, recipientId, status: 'pending' },
       { status },
       { new: true }
-    )
+    ),
+  getFollowers: async (userId) => {
+    const followers = await Follow.find({ followingId: userId }).select('followerId').lean();
+    const followerIds = followers.map((f) => f.followerId);
+    return hydrateFollowInteractions(followerIds);
+  },
+  getFollowing: async (userId) => {
+    const following = await Follow.find({ followerId: userId }).select('followingId').lean();
+    const followingIds = following.map((f) => f.followingId);
+    return hydrateFollowInteractions(followingIds);
+  }
 };

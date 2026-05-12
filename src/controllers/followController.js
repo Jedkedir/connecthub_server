@@ -20,5 +20,14 @@ export const followController = {
   unfollow: asyncHandler(async (req, res) => {
     const result = await followService.unfollow(req.user._id, req.body.targetUserId);
     res.json({ data: result });
+  }),
+  getFollowers: asyncHandler(async (req, res) => {
+    const followers = await followService.getFollowers(req.params.id);
+    res.json({ data: { followers } });
+  }),
+  getFollowing: asyncHandler(async (req, res) => {
+    const following = await followService.getFollowing(req.params.id);
+    res.json({ data: { following } });
   })
+
 };

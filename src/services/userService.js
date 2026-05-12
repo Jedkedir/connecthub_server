@@ -8,8 +8,8 @@ export const userService = {
     return user;
   },
 
-  getUserById: async (id) => {
-    const user = await userRepository.findById(id);
+  getUserById: async (id, currentUserId) => {
+    const user = await userRepository.findById(id, currentUserId);
     if (!user) throw new AppError('USER_NOT_FOUND', 'User not found.', 404);
     return user;
   },

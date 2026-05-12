@@ -1,8 +1,11 @@
 import { User } from '../models/User.js';
-
+import { hydrateUser } from '../utils/userHelper.js';
 export const userRepository = {
   create: (data) => User.create(data),
-  findById: (id, projection) => User.findById(id, projection),
+  findById: async (id, currentUser_id) =>{ 
+    const user = await User.findById(id)
+    return await hydrateUser(user, currentUser_id);
+  },
   findByIdWithPassword: (id) => User.findById(id).select('+password +refreshTokenHash'),
   findByEmailWithPassword: (email) => User.findOne({ email }).select('+password +refreshTokenHash'),
   findByUsernameOrEmail: (username, email) => User.findOne({ $or: [{ username }, { email }] }),

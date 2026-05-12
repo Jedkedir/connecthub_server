@@ -164,6 +164,15 @@ Base URL: `/api/v1`
   - `limit` (integer 1-50)
 - Returns `200`: paginated list of bookmarked posts.
 
+### GET /api/v1/posts/liked/me
+  
+- Descripion: Lists posts liked by current user.
+- Auth: Required.
+- Expects query(optional):
+  - `cursor` (string)
+  - `limit` (integer 1-50)
+- Returns `200`: paginated list of liked posts
+
 ### GET /api/v1/posts/user/:userId
 
 - Description: Lists posts authored by a specific user.
@@ -216,7 +225,7 @@ Base URL: `/api/v1`
   - `id` (post id)
 - Returns `200`: `{ "data": { "post": { ... } } }`.
 
-### POST /api/v1/posts/:id/comment
+### POST /api/v1/posts/:id/comments
 
 - Description: Adds a comment to a post.
 - Auth: Required.
@@ -318,6 +327,22 @@ Base URL: `/api/v1`
 - Expects body:
   - `targetUserId` (24-char hex ObjectId, required)
 - Returns `200`: `{ "data": { ... } }`.
+
+### GET /api/v1/follow/:id/followers
+
+- Description: List of the followers of the user specified.
+- Auth: Required.
+- Expects params:
+  - `id` (24-char hex ObjectId, required)
+- Returns `200`: `{"data": { ... }}`
+
+### GET /api/v1/follow/:id/following
+
+- Description: List of user followed by the user specified.
+- Auth: Required.
+- Expects params:
+  - `id` (24-char hex ObjectId, required)
+- Returns `200`: `{"data": { ... }}`
 
 ## Notifications(Uses Socket.IO)
 
