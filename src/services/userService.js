@@ -16,10 +16,9 @@ export const userService = {
 
   updateProfile: async (userId, data) => {
     const allowed = {};
-    for (const key of ['bio', 'profilePic']) {
+    for (const key of ['username','bio', 'profilePic']) {
       if (data[key] !== undefined) allowed[key] = data[key];
     }
-
     const user = await userRepository.updateById(userId, allowed);
     if (!user) throw new AppError('USER_NOT_FOUND', 'User not found.', 404);
     return user;

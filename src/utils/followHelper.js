@@ -13,7 +13,6 @@ export const hydrateFollowInteractions = async (userIds, currentUserId) => {
     return [];
   }
 
-  console.log('Hydrating follow interactions for userIds:', userIds, 'Current User ID:', currentUserId);
 
   // 1. Force convert string IDs to true MongoDB ObjectIds
   const targetObjectIds = userIds.map(id => new mongoose.Types.ObjectId(id));
