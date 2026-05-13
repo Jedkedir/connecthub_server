@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Comment } from "../models/Comment.js";
+import { CommentLike } from "../models/CommentLike.js";
 // Helper function to hydrate a single comment with its replies
 export const hydrateComment = async (comment, userId = null) => {
   if (!comment) return comment;

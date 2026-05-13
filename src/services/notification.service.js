@@ -158,5 +158,12 @@ export const notificationService = {
   markAllRead: async (userId) => {
     const result = await notificationRepository.markAllRead(userId);
     return { modifiedCount: result.modifiedCount };
+  },
+  deleteNotification: async (userId, notificationId) => {
+    const result = await notificationRepository.deleteNotification(notificationId, userId);
+    if (result.deletedCount === 0) {
+      throw new AppError('NOTIFICATION_NOT_FOUND', 'Notification not found.', 404);
+    }
+    return;
   }
 };

@@ -126,17 +126,17 @@ export const interactionRepository = {
   deleteBookmark: (userId, postId) => Bookmark.findOneAndDelete({ userId, postId }),
   
   findBookmarksByUser: async (userId, cursor, limit) => {
-    const bookmarks = await Bookmark.find({ userId, ...buildCreatedAtCursorFilter(cursor) })
+    let bookmarks = await Bookmark.find({ userId, ...buildCreatedAtCursorFilter(cursor) })
       .sort({ createdAt: -1, _id: -1 })
       .limit(limit + 1)
       .populate({
         path: 'postId',
         populate: { path: 'authorId', select: 'username profilePic' }
       });
-
+      bookmarks = bookmarks.filter(b => b.postId); // Filter out bookmarks with missing posts
     const posts = bookmarks.map(b => b.postId).filter(Boolean);
     const hydratedPosts = await hydratePostInteractions(posts, userId);
-
+    
     return bookmarks.map((bookmark, index) => {
       const b = bookmark.toObject();
       return {

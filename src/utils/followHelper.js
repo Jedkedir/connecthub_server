@@ -1,29 +1,60 @@
 import mongoose from 'mongoose';
-import {User} from '../models/User.js';
+import { User } from '../models/User.js';
 import { FollowRequest } from '../models/FollowRequest.js';
-export const hydrateFollowInteractions = async (userIds,currentUser) => {
+
+/**
+ * Hydrates user profiles with contextual follow and pending statuses.
+ * @param {string[]} userIds - IDs for followers or following users
+ * @param {string} currentUserId - The current user's ID string
+ * @returns {Promise<Array>} Hydrated user objects
+ */
+export const hydrateFollowInteractions = async (userIds, currentUserId) => {
   if (!userIds || userIds.length === 0) {
     return [];
   }
-  const Ids = userIds.map(id => new mongoose.Types.ObjectId(id).toString());
-  const users = await User.find({ _id: { $in: Ids } }).select('username email profilePic followingCount followersCount').lean();
+
+  console.log('Hydrating follow interactions for userIds:', userIds, 'Current User ID:', currentUserId);
+
+  // 1. Force convert string IDs to true MongoDB ObjectIds
+  const targetObjectIds = userIds.map(id => new mongoose.Types.ObjectId(id));
+  const currentObjectUserId = currentUserId ? new mongoose.Types.ObjectId(currentUserId) : null;
+
+  // 2. Fetch target users as plain JavaScript objects
+  const users = await User.find({ _id: { $in: targetObjectIds } })
+    .select('username email profilePic followingCount followersCount')
+    .lean();
+
   if (!users || users.length === 0) {
     return [];
   }
-  // Add isFollowing field to each user
-  const currentUserFollowing = currentUser?.following || [];
-  // Check if the current user has sent follow requests to these users
-  const followRequests = await FollowRequest.find({
-    requesterId: currentUser?._id,
-    targetId: { $in: Ids }
-  });
 
+  // 3. Fetch the current user's following list using the currentUserId
+  let followingSet = new Set();
+  if (currentObjectUserId) {
+    const currentUserDoc = await User.findById(currentObjectUserId).select('following').lean();
+    if (currentUserDoc?.following) {
+      followingSet = new Set(currentUserDoc.following.map(id => id.toString()));
+    }
+  }
+
+  // 4. Query using 'recipientId' with the ObjectId array
+  let pendingSet = new Set();
+  if (currentObjectUserId) {
+    const followRequests = await FollowRequest.find({
+      requesterId: currentObjectUserId,
+      recipientId: { $in: targetObjectIds } // Fixed: Matches your database schema
+    }).lean();
+    
+    pendingSet = new Set(followRequests.map(req => req.recipientId.toString()));
+  }
+
+  // 5. Map fields directly into the plain user objects
   return users.map(user => {
-    const u = user.toObject?.() || user;
+    const userIdStr = user._id.toString();
     return {
-      ...u,
-      isFollowing: currentUserFollowing.includes(u._id.toString()),
-      isPending: followRequests.some(req => req.targetId.toString() === u._id.toString())
+      ...user,
+      isFollowing: followingSet.has(userIdStr),
+      isPending: pendingSet.has(userIdStr)
     };
   });
 };

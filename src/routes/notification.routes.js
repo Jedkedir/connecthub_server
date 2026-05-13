@@ -11,5 +11,6 @@ router.use(authenticate);
 router.get('/', validate(paginationQuery, 'query'), notificationController.getNotifications);
 router.patch('/read-all', notificationController.markAllRead);
 router.patch('/:id/read', notificationController.markRead);
+router.delete('/:id', notificationController.deleteNotification);
 
 export default router;

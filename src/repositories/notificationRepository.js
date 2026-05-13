@@ -14,5 +14,8 @@ export const notificationRepository = {
   markRead: (id, recipientId) =>
     Notification.findOneAndUpdate({ _id: id, recipientId }, { isRead: true }, { new: true }),
   markAllRead: (recipientId) =>
-    Notification.updateMany({ recipientId, isRead: false }, { isRead: true })
+    Notification.updateMany({ recipientId, isRead: false }, { isRead: true }),
+  deleteNotification: (notificationId, recipientId) =>
+    Notification.deleteOne({ _id: notificationId, recipientId })
+  
 };

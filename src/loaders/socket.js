@@ -13,7 +13,7 @@ export const initSocketServer = (server) => {
   });
 
   io.on('connection', (socket) => {
-    logger.info('Socket connection attempt', { socketId: socket.id, userId });
+    logger.info('Socket connection attempt', { socketId: socket.id });
     const { userId } = socket.handshake.query;
     if (!userId) {
       socket.disconnect(true);
@@ -22,7 +22,7 @@ export const initSocketServer = (server) => {
     }
 
     socket.join(userId.toString());
-    logger.info('Socket connected', { socketId: socket.id, userId });
+    logger.info('Socket connected', { socketId: socket.id });
   });
 
   return io;

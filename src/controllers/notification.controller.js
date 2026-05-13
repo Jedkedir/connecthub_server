@@ -15,5 +15,9 @@ export const notificationController = {
   markAllRead: asyncHandler(async (req, res) => {
     const result = await notificationService.markAllRead(req.user._id);
     res.json({ data: result });
+  }),
+  deleteNotification: asyncHandler(async (req, res) => {
+    await notificationService.deleteNotification(req.user._id, req.params.id);
+    res.json({ message: 'Notification deleted' });
   })
 };
