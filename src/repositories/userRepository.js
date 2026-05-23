@@ -9,6 +9,7 @@ export const userRepository = {
   findByIdWithPassword: (id) => User.findById(id).select('+password +refreshTokenHash'),
   findByEmailWithPassword: (email) => User.findOne({ email }).select('+password +refreshTokenHash'),
   findByUsernameOrEmail: (username, email) => User.findOne({ $or: [{ username }, { email }] }),
+  findByEmail: (email) => User.findOne({ email }),
   updateById: (id, data) => User.findByIdAndUpdate(id, data, { new: true, runValidators: true }),
   updatePasswordAndRefreshToken: (id, password, refreshTokenHash) =>
     User.findByIdAndUpdate(id, { password, refreshTokenHash }, { new: true }),

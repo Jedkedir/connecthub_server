@@ -16,7 +16,7 @@ export const userService = {
 
   updateProfile: async (userId, data) => {
     const allowed = {};
-    for (const key of ['username','bio', 'profilePic']) {
+    for (const key of ['fullname','bio', 'profilePic']) {
       if (data[key] !== undefined) allowed[key] = data[key];
     }
     const user = await userRepository.updateById(userId, allowed);

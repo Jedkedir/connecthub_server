@@ -3,13 +3,9 @@ import { User } from '../models/User.js';
 import { FollowRequest } from '../models/FollowRequest.js';
 import {hydrateFollowInteractions} from '../utils/followHelper.js'
 
-const incrimentFollowerCount = async (userId) => {
-  await User.findByIdAndUpdate(userId, { $inc: { followerCount: 1 } });
-};
 
-const decrementFollowerCount = async (userId) => {
-  await User.findByIdAndUpdate(userId, { $inc: { followerCount: -1 } });
-};
+
+
 const deleteFollowRequest = async (requesterId, recipientId) => {
   await FollowRequest.findOneAndDelete({ requesterId, recipientId, status: 'pending' });
 };
@@ -20,13 +16,14 @@ export const followRepository = {
   },
   createFollow: (followerId, followingId) => {
     const follow = Follow.create({ followerId, followingId });
-    incrimentFollowerCount(followingId);
+    // Delete any pending follow request between these users
     deleteFollowRequest(followerId, followingId);
     return follow;
   },
   deleteFollow: (followerId, followingId) => {
     const follow = Follow.findOneAndDelete({ followerId, followingId });
-    decrementFollowerCount(followingId);
+    // Delete any pending follow request between these users
+    deleteFollowRequest(followerId, followingId);
     return follow;
   },
   findFollowingIds: async (followerId) => {

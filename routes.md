@@ -54,7 +54,7 @@ Base URL: `/api/v1`
 - Description: Creates a user account and returns auth tokens.
 - Auth: Not required.
 - Expects body:
-  - `username` (string, alphanumeric, 3-30, required)
+  - `fullname` (string, alphanumeric, 3-30, required)
   - `email` (valid email, required)
   - `password` (string, 8-128, required)
   - `bio` (string, max 280, optional)
@@ -165,7 +165,7 @@ Base URL: `/api/v1`
 - Returns `200`: paginated list of bookmarked posts.
 
 ### GET /api/v1/posts/liked/me
-  
+
 - Descripion: Lists posts liked by current user.
 - Auth: Required.
 - Expects query(optional):

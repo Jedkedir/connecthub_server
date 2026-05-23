@@ -20,7 +20,7 @@ export const hydrateFollowInteractions = async (userIds, currentUserId) => {
 
   // 2. Fetch target users as plain JavaScript objects
   const users = await User.find({ _id: { $in: targetObjectIds } })
-    .select('username email profilePic followingCount followersCount')
+    .select('fullname email profilePic followingCount followersCount')
     .lean();
 
   if (!users || users.length === 0) {
