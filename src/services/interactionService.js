@@ -5,6 +5,7 @@ import {
 } from "../events/eventBus.js";
 import { interactionRepository } from "../repositories/interactionRepository.js";
 import { postRepository } from "../repositories/postRepository.js";
+import { userRepository } from "../repositories/userRepository.js";
 import { AppError } from "../utils/AppError.js";
 import { getCreatedAtCursorFromDoc, getLimit } from "../utils/pagination.js";
 import { postService } from "./postService.js";
@@ -37,6 +38,19 @@ const addLikeState = async (comments, userId) => {
       };
     }),
   );
+};
+
+const normalizeMentions = (mentions) => {
+  if (!Array.isArray(mentions)) return [];
+  return [
+    ...new Set(
+      mentions
+        .map((mention) =>
+          String(mention).trim().toLowerCase().replace(/^@/, ""),
+        )
+        .filter(Boolean),
+    ),
+  ];
 };
 
 export const interactionService = {
@@ -133,6 +147,22 @@ export const interactionService = {
           commentId: comment._id,
         }),
       );
+    }
+
+    const mentions = normalizeMentions(payload.mentions);
+    if (mentions.length > 0) {
+      const mentionedUsers = await userRepository.findByUsernames(mentions);
+      for (const mentionedUser of mentionedUsers) {
+        eventBus.emit(
+          NOTIFICATION_EVENTS.COMMENT_MENTIONED,
+          createDomainEvent(NOTIFICATION_EVENTS.COMMENT_MENTIONED, {
+            senderId: userId,
+            recipientId: mentionedUser._id,
+            postId,
+            commentId: comment._id,
+          }),
+        );
+      }
     }
 
     await postRepository.increment(postId, "commentsCount", 1);

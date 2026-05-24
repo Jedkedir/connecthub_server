@@ -9,7 +9,7 @@
     "dev": "nodemon src/server.js",
     "seed": "node src/seed.js",
     "test": "node jest --coverage",
-    "lint": "node --check src/server.js"
+    "lint": "eslint src/**/*.js"
   },
   "keywords": [
     "express",
@@ -39,6 +39,9 @@
     "winston": "^3.19.0"
   },
   "devDependencies": {
+    "eslint": "^10.4.0",
+    "@eslint/js": "^9.39.4",
+    "globals": "^17.6.0",
     "jest": "^30.4.1",
     "nodemon": "^3.1.9",
     "supertest": "^7.2.2"

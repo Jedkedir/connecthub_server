@@ -13,6 +13,7 @@ export const feedController = {
   }),
 
   explore: asyncHandler(async (req, res) => {
+    console.log("Received explore request with query:", req.query);
     const result = await feedService.explore(req.user._id, req.query);
     res.json(result);
   })

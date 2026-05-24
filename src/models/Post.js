@@ -1,52 +1,57 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema(
   {
     authorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
-      index: true
+      index: true,
     },
     content: {
       type: String,
       required: true,
       trim: true,
-      maxlength: 2000
+      maxlength: 2000,
     },
     mediaUrls: {
       type: [String],
-      default: []
+      default: [],
+    },
+    topics: {
+      type: [String],
+      default: [],
     },
     likesCount: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
     commentsCount: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
     bookmarksCount: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
     viewCount: {
       type: Number,
       default: 0,
-      min: 0
-    }
+      min: 0,
+    },
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
 postSchema.index({ createdAt: -1, _id: -1 });
 postSchema.index({ authorId: 1, createdAt: -1 });
-postSchema.index({ content: 'text' });
+postSchema.index({ content: "text" });
+postSchema.index({ topics: 1 });
 postSchema.index({ likesCount: -1, commentsCount: -1, viewCount: -1 });
 
-export const Post = mongoose.model('Post', postSchema);
+export const Post = mongoose.model("Post", postSchema);
