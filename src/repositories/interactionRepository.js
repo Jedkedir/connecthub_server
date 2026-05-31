@@ -88,7 +88,12 @@ export const interactionRepository = {
   // Comment like methods
   createCommentLike: (userId, commentId) =>
     CommentLike.create({ userId, commentId }),
-
+  incrementCommentLikeCount: (commentId, amount) =>
+    Comment.findByIdAndUpdate(
+      commentId,
+      { $inc: { likeCount: amount } },
+      { new: true },
+    ),
   deleteCommentLike: (userId, commentId) =>
     CommentLike.findOneAndDelete({ userId, commentId }),
 

@@ -12,6 +12,19 @@ export const userRepository = {
     User.findOne({ email }).select("+password +refreshTokenHash"),
   findByUsernameOrEmail: (username, email) =>
     User.findOne({ $or: [{ username }, { email }] }),
+  findByUsername: (username) => User.findOne({ username }).lean(),
+  searchByUsername: (query, limit) => {
+    const escapedQuery = String(query)
+      .trim()
+      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return User.find({
+      username: { $regex: `^${escapedQuery}`, $options: "i" },
+    })
+      .select("_id username fullname profilePic bio")
+      .sort({ username: 1 })
+      .limit(limit)
+      .lean();
+  },
   findByUsernames: (usernames) =>
     User.find({ username: { $in: usernames } })
       .select("_id username")

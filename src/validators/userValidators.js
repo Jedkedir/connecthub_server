@@ -1,7 +1,20 @@
-import Joi from 'joi';
+import Joi from "joi";
 
 export const updateProfileSchema = Joi.object({
-  fullname: Joi.string().regex(/^[a-zA-Z ]+$/).min(3).max(30).optional(),
-  bio: Joi.string().max(280).allow('').optional(),
-  profilePic: Joi.string().uri().allow('').optional()
+  fullname: Joi.string()
+    .regex(/^[a-zA-Z ]+$/)
+    .min(3)
+    .max(30)
+    .optional(),
+  bio: Joi.string().max(280).allow("").optional(),
+  profilePic: Joi.string().uri().allow("").optional(),
 }).min(1);
+
+export const userSearchSchema = Joi.object({
+  query: Joi.string().trim().min(1).max(50).required(),
+  limit: Joi.number().integer().min(1).max(5).optional(),
+});
+
+export const usernameParamSchema = Joi.object({
+  username: Joi.string().trim().min(1).max(50).required(),
+});

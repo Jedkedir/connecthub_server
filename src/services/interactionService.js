@@ -220,7 +220,7 @@ export const interactionService = {
 
     const updatedComment =
       await interactionRepository.incrementCommentLikeCount(commentId, 1);
-
+    console.log("liked Comment",updatedComment)
     eventBus.emit(
       NOTIFICATION_EVENTS.COMMENT_LIKED,
       createDomainEvent(NOTIFICATION_EVENTS.COMMENT_LIKED, {
@@ -250,6 +250,7 @@ export const interactionService = {
 
     const updatedComment =
       await interactionRepository.incrementCommentLikeCount(commentId, -1);
+    console.log("Unliked Comment",updatedComment)
     return { likeCount: updatedComment.likeCount, isLiked: false };
   },
 
