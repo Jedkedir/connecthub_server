@@ -24,6 +24,9 @@ COPY --from=dependencies --chown=nodejs:nodejs /app/node_modules ./node_modules
 # Copy application source
 COPY --chown=nodejs:nodejs . .
 
+# Winston writes local development logs here; keep it writable for bind mounts.
+RUN mkdir -p /app/logs && chown -R nodejs:nodejs /app/logs
+
 # Switch to non-root user
 USER nodejs
 

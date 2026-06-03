@@ -190,7 +190,7 @@ export const feedRepository = {
       ? { $text: { $search: query }, ...buildCreatedAtCursorFilter(cursor) }
       : buildCreatedAtCursorFilter(cursor);
 
-    const posts = await buildPostQuery(
+    const postsQuery = buildPostQuery(
       filter,
       query
         ? { score: { $meta: "textScore" }, createdAt: -1 }
@@ -198,7 +198,9 @@ export const feedRepository = {
       limit,
     );
 
-    if (query) posts.select({ score: { $meta: "textScore" } });
+    if (query) postsQuery.select({ score: { $meta: "textScore" } });
+
+    const posts = await postsQuery;
 
     return hydratePostInteractions(posts, userId);
   },
