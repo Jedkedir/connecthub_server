@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
@@ -20,36 +20,36 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
-      lowercase: true
+      lowercase: true,
     },
     password: {
       type: String,
       required: true,
-      select: false
+      select: false,
     },
     bio: {
       type: String,
-      default: '',
-      maxlength: 280
+      default: "",
+      maxlength: 280,
     },
     profilePic: {
       type: String,
-      default: ''
+      default: "",
     },
     followersCount: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
     followingCount: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
     refreshTokenHash: {
       type: String,
-      select: false
-    }
+      select: false,
+    },
   },
   {
     timestamps: true,
@@ -59,27 +59,22 @@ const userSchema = new mongoose.Schema(
         delete ret.refreshTokenHash;
         delete ret.__v;
         return ret;
-      }
-    }
-  }
+      },
+    },
+  },
 );
-// Indexes
-userSchema.index({ email: 1 });
 userSchema.index({ fullname: 1 });
-userSchema.index({ username: 1 });
 
 // Random user name generator using pre-save hook and full name
-userSchema.pre('save', async function (next) {
+userSchema.pre("save", async function (next) {
   // Only generate a username if it is a new document or doesn't have one yet
-  if (!this.isModified('fullname') && this.username) {
+  if (!this.isModified("fullname") && this.username) {
     return next();
   }
 
   try {
     // Clean fullname: lowercase and remove non-alphanumeric characters
-    const baseUsername = this.fullname
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '');
+    const baseUsername = this.fullname.toLowerCase().replace(/[^a-z0-9]/g, "");
 
     let proposedUsername = baseUsername;
     let isUnique = false;
@@ -87,8 +82,10 @@ userSchema.pre('save', async function (next) {
 
     // Loop until we find a username that does not exist in the database
     while (!isUnique) {
-      const existingUser = await mongoose.models.User.findOne({ username: proposedUsername });
-      
+      const existingUser = await mongoose.models.User.findOne({
+        username: proposedUsername,
+      });
+
       if (!existingUser) {
         isUnique = true;
       } else {
@@ -105,4 +102,4 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-export const User = mongoose.model('User', userSchema);
+export const User = mongoose.model("User", userSchema);
