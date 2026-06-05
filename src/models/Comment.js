@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+/**
+ * Stores top-level comments and first-level replies for posts.
+ */
 const commentSchema = new mongoose.Schema(
   {
     userId: {
@@ -44,4 +47,7 @@ commentSchema.index({ postId: 1, parentCommentId: 1, createdAt: -1 });
 commentSchema.index({ userId: 1, createdAt: -1 });
 commentSchema.index({ parentCommentId: 1, createdAt: -1 });
 
+/**
+ * Comment model for post discussion entries.
+ */
 export const Comment = mongoose.model('Comment', commentSchema);

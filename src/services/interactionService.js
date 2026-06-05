@@ -10,12 +10,22 @@ import { AppError } from "../utils/AppError.js";
 import { getCreatedAtCursorFromDoc, getLimit } from "../utils/pagination.js";
 import { postService } from "./postService.js";
 
+/**
+ * Loads a post or raises the API not-found error.
+ * @param {string} postId - Post ID.
+ * @returns {Promise<Object>} Post document.
+ */
 const ensurePost = async (postId) => {
   const post = await postRepository.findByIdRaw(postId);
   if (!post) throw new AppError("POST_NOT_FOUND", "Post not found.", 404);
   return post;
 };
 
+/**
+ * Loads a comment or raises the API not-found error.
+ * @param {string} commentId - Comment ID.
+ * @returns {Promise<Object>} Hydrated comment.
+ */
 const ensureComment = async (commentId) => {
   const comment = await interactionRepository.findCommentById(commentId);
   if (!comment)
@@ -23,8 +33,19 @@ const ensureComment = async (commentId) => {
   return comment;
 };
 
+/**
+ * Detects MongoDB duplicate-key errors from unique indexes.
+ * @param {Error} error - Error thrown by Mongoose or MongoDB.
+ * @returns {boolean} True when the error is a duplicate-key conflict.
+ */
 const isDuplicateKey = (error) => error?.code === 11000;
 
+/**
+ * Adds current-user like state to a list of comments.
+ * @param {Object[]} comments - Comments to enrich.
+ * @param {string} userId - Current user ID.
+ * @returns {Promise<Object[]>} Comments with isLiked flags.
+ */
 const addLikeState = async (comments, userId) => {
   return Promise.all(
     comments.map(async (comment) => {
@@ -40,6 +61,11 @@ const addLikeState = async (comments, userId) => {
   );
 };
 
+/**
+ * Normalizes mention strings to unique lowercase usernames.
+ * @param {string[]|undefined} mentions - Raw mention list.
+ * @returns {string[]} Unique normalized usernames.
+ */
 const normalizeMentions = (mentions) => {
   if (!Array.isArray(mentions)) return [];
   return [
@@ -53,7 +79,13 @@ const normalizeMentions = (mentions) => {
   ];
 };
 
+/**
+ * Contains interaction business operations for posts, comments, likes, and bookmarks.
+ */
 export const interactionService = {
+  /**
+   * Creates a post like, handles duplicate likes, emits a notification, and increments counts.
+   */
   likePost: async (userId, postId) => {
     const post = await ensurePost(postId);
 
@@ -82,6 +114,9 @@ export const interactionService = {
     return postRepository.increment(postId, "likesCount", 1);
   },
 
+  /**
+   * Removes a post like and decrements the post like count.
+   */
   unlikePost: async (userId, postId) => {
     await ensurePost(postId);
     const deleted = await interactionRepository.deleteLike(userId, postId);
@@ -96,6 +131,9 @@ export const interactionService = {
     return postRepository.increment(postId, "likesCount", -1);
   },
 
+  /**
+   * Adds a top-level comment or first-level reply and emits relevant notifications.
+   */
   addComment: async (userId, postId, payload) => {
     const post = await ensurePost(postId);
     const parentCommentId = payload.parentCommentId || null;
@@ -169,6 +207,9 @@ export const interactionService = {
     return comment.populate("userId", "fullname profilePic");
   },
 
+  /**
+   * Returns paginated top-level comments for a post with like metadata.
+   */
   getComments: async (userId, postId, query) => {
     await ensurePost(postId);
     const limit = getLimit(query.limit);
@@ -186,6 +227,9 @@ export const interactionService = {
     );
   },
 
+  /**
+   * Returns paginated replies for a comment with like metadata.
+   */
   getReplies: async (commentId, query, userId) => {
     await ensureComment(commentId);
     const limit = getLimit(query.limit);
@@ -202,6 +246,9 @@ export const interactionService = {
     );
   },
 
+  /**
+   * Creates a comment like, emits a notification, and returns updated like state.
+   */
   likeComment: async (userId, commentId) => {
     const comment = await ensureComment(commentId);
 
@@ -234,6 +281,9 @@ export const interactionService = {
     return { likeCount: updatedComment.likeCount, isLiked: true };
   },
 
+  /**
+   * Removes a comment like and returns updated like state.
+   */
   unlikeComment: async (userId, commentId) => {
     await ensureComment(commentId);
     const deleted = await interactionRepository.deleteCommentLike(
@@ -254,6 +304,9 @@ export const interactionService = {
     return { likeCount: updatedComment.likeCount, isLiked: false };
   },
 
+  /**
+   * Updates a comment when the authenticated user is its author.
+   */
   updateComment: async (userId, commentId, content) => {
     const comment = await interactionRepository.updateComment(
       commentId,
@@ -270,6 +323,9 @@ export const interactionService = {
     return comment;
   },
 
+  /**
+   * Deletes an owned comment, its replies when needed, and updates counters.
+   */
   deleteComment: async (userId, commentId) => {
     const comment = await ensureComment(commentId);
     if (comment.userId._id.toString() !== userId.toString()) {
@@ -302,6 +358,9 @@ export const interactionService = {
     return { deleted: true, deletedCount };
   },
 
+  /**
+   * Creates a bookmark and increments the post bookmark count.
+   */
   bookmarkPost: async (userId, postId) => {
     await ensurePost(postId);
 
@@ -321,6 +380,9 @@ export const interactionService = {
     return postRepository.increment(postId, "bookmarksCount", 1);
   },
 
+  /**
+   * Removes a bookmark and decrements the post bookmark count.
+   */
   unbookmarkPost: async (userId, postId) => {
     await ensurePost(postId);
     const deleted = await interactionRepository.deleteBookmark(userId, postId);
@@ -331,6 +393,9 @@ export const interactionService = {
     return postRepository.increment(postId, "bookmarksCount", -1);
   },
 
+  /**
+   * Returns paginated bookmarks for a user.
+   */
   getBookmarks: async (userId, query) => {
     const limit = getLimit(query.limit);
     const bookmarks = await interactionRepository.findBookmarksByUser(
@@ -343,6 +408,9 @@ export const interactionService = {
     );
   },
 
+  /**
+   * Returns paginated posts liked by a user.
+   */
   getLikedPosts: async (userId, query) => {
     const limit = getLimit(query.limit);
     const likedPosts = await interactionRepository.findLikedPostsByUser(

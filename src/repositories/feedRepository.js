@@ -11,13 +11,26 @@ const userProjection = {
   bio: 1,
 };
 
+/**
+ * Builds the common populated post query used by feed lookups.
+ * @param {Object} filter - MongoDB filter.
+ * @param {Object} sort - MongoDB sort object.
+ * @param {number} limit - Page size before limit-plus-one expansion.
+ * @returns {import('mongoose').Query} Mongoose query for posts.
+ */
 const buildPostQuery = (filter, sort, limit) =>
   Post.find(filter)
     .sort(sort)
     .limit(limit + 1)
     .populate("authorId", "fullname username profilePic");
 
+/**
+ * Encapsulates feed and exploration persistence queries.
+ */
 export const feedRepository = {
+  /**
+   * Finds recent posts matching a filter and hydrates current-user interactions.
+   */
   findRecent: async (userId, filter, cursor, limit) => {
     const posts = await buildPostQuery(
       {
@@ -31,6 +44,9 @@ export const feedRepository = {
     return hydratePostInteractions(posts, userId);
   },
 
+  /**
+   * Aggregates the ranked global feed using score and cursor conditions.
+   */
   aggregateGlobalFeed: (userId, cursor, limit) => {
     const after = cursor
       ? {
@@ -166,6 +182,9 @@ export const feedRepository = {
     return Post.aggregate(pipeline);
   },
 
+  /**
+   * Finds a user's profile and paginated posts by username.
+   */
   findByUsername: async (userId, username, cursor, limit) => {
     const user = await User.findOne({ username }).select(userProjection).lean();
     if (!user) return { user: null, posts: [] };
@@ -185,6 +204,9 @@ export const feedRepository = {
     };
   },
 
+  /**
+   * Finds posts by text search or recent order when no query is provided.
+   */
   findByContent: async (userId, query, cursor, limit) => {
     const filter = query
       ? { $text: { $search: query }, ...buildCreatedAtCursorFilter(cursor) }
@@ -205,6 +227,9 @@ export const feedRepository = {
     return hydratePostInteractions(posts, userId);
   },
 
+  /**
+   * Finds posts tagged with a normalized topic.
+   */
   findByTopic: async (userId, topic, cursor, limit) => {
     const normalizedTopic = topic.toLowerCase().replace(/^#/, "");
     const posts = await buildPostQuery(

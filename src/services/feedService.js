@@ -3,6 +3,11 @@ import { feedRepository } from "../repositories/feedRepository.js";
 import { decodeCursor, encodeCursor, getLimit } from "../utils/pagination.js";
 import { postService } from "./postService.js";
 
+/**
+ * Builds a cursor for the ranked global feed.
+ * @param {Object|null} post - Last visible post from the page.
+ * @returns {string|null} Encoded cursor.
+ */
 const buildGlobalCursor = (post) => {
   if (!post) return null;
   return encodeCursor({
@@ -12,7 +17,13 @@ const buildGlobalCursor = (post) => {
   });
 };
 
+/**
+ * Contains feed and exploration business operations.
+ */
 export const feedService = {
+  /**
+   * Returns recent posts from users followed by the authenticated user.
+   */
   personalized: async (userId, query) => {
     const limit = getLimit(query.limit);
     const followingIds = await followRepository.findFollowingIds(userId);
@@ -30,6 +41,9 @@ export const feedService = {
     return postService.toPaginationResult(posts, limit);
   },
 
+  /**
+   * Returns ranked global posts using score and cursor pagination.
+   */
   global: async (userId, query) => {
     const limit = getLimit(query.limit);
     const cursor = decodeCursor(query.cursor);
@@ -42,10 +56,10 @@ export const feedService = {
   },
 
   /**
-   * Explore posts based on a search query. If no query is provided, it returns recent posts.
-   * @param {string} userId - The ID of the user making the request.
-   * @param {Object} query - The query parameters. query.user or query.topic or query.content is the search term, query.cursor is the pagination cursor, and query.limit is the number of items to return.
-   * @returns {Object} - An object containing the data and pageInfo properties.
+   * Explores posts by username, topic, content search, or recent posts.
+   * @param {string} userId - ID of the user making the request.
+   * @param {Object} query - Search and pagination query parameters.
+   * @returns {Promise<Object>} Paginated feed result with optional user context.
    */
   explore: async (userId, query) => {
     const limit = getLimit(query.limit);

@@ -1,24 +1,27 @@
 import mongoose from "mongoose";
 import { Comment } from "../models/Comment.js";
 import { CommentLike } from "../models/CommentLike.js";
-// Helper function to hydrate a single comment with its replies
+
+/**
+ * Adds reply and like metadata to a single comment document.
+ * @param {Object|null} comment - Mongoose comment document or plain comment object.
+ * @param {string|null} [userId=null] - Current user used to compute like state.
+ * @returns {Promise<Object|null>} Hydrated comment with replies, counts, and like flags.
+ */
 export const hydrateComment = async (comment, userId = null) => {
   if (!comment) return comment;
 
   const commentObj = comment.toObject ? comment.toObject() : comment;
 
-  // Get replies for this comment
   const replies = await Comment.find({ parentCommentId: comment._id })
     .sort({ createdAt: -1 })
     .populate("userId", "fullname profilePic")
     .lean();
 
-  // Hydrate each reply recursively (if you want nested replies, but usually replies don't have replies)
   const hydratedReplies = await Promise.all(
     replies.map(async (reply) => {
       const replyWithLikes = { ...reply };
 
-      // Add like info if userId is provided
       if (userId) {
         const isLiked = await CommentLike.exists({
           userId,
@@ -31,8 +34,7 @@ export const hydrateComment = async (comment, userId = null) => {
     }),
   );
 
-  // Add like info for the main comment if userId is provided
-  let likeCount = commentObj.likeCount || 0;
+  const likeCount = commentObj.likeCount || 0;
   let isLiked = false;
 
   if (userId) {
@@ -52,13 +54,17 @@ export const hydrateComment = async (comment, userId = null) => {
   };
 };
 
-// Helper function to hydrate multiple comments
+/**
+ * Adds reply and like metadata to a list of comments in batched queries.
+ * @param {Object[]} comments - Comment documents or plain comment objects.
+ * @param {string|null} [userId=null] - Current user used to compute like state.
+ * @returns {Promise<Object[]>} Hydrated comments with nested replies.
+ */
 export const hydrateComments = async (comments, userId = null) => {
   if (!comments || comments.length === 0) return [];
 
   const commentIds = comments.map((c) => c._id);
 
-  // Batch fetch all replies for these comments
   const allReplies = await Comment.find({
     parentCommentId: { $in: commentIds },
   })
@@ -66,7 +72,6 @@ export const hydrateComments = async (comments, userId = null) => {
     .populate("userId", "fullname profilePic")
     .lean();
 
-  // Group replies by parent comment ID
   const repliesByParentId = {};
   allReplies.forEach((reply) => {
     const parentId = reply.parentCommentId.toString();
@@ -76,7 +81,6 @@ export const hydrateComments = async (comments, userId = null) => {
     repliesByParentId[parentId].push(reply);
   });
 
-  // Batch fetch all comment likes if userId is provided
   let likesByCommentId = {};
   if (userId) {
     const allLikes = await CommentLike.find({
@@ -90,7 +94,6 @@ export const hydrateComments = async (comments, userId = null) => {
     });
   }
 
-  // Hydrate each comment
   return comments.map((comment) => {
     const commentObj = comment.toObject ? comment.toObject() : comment;
     const replies = repliesByParentId[comment._id.toString()] || [];

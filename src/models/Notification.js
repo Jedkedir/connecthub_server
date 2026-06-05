@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+/**
+ * Stores user-facing notifications created from domain events.
+ */
 const notificationSchema = new mongoose.Schema(
   {
     recipientId: {
@@ -50,4 +53,7 @@ notificationSchema.index({ recipientId: 1, createdAt: -1 });
 notificationSchema.index({ isRead: 1 });
 notificationSchema.index({ recipientId: 1, isRead: 1, createdAt: -1 });
 
+/**
+ * Notification model for in-app notification records.
+ */
 export const Notification = mongoose.model('Notification', notificationSchema);

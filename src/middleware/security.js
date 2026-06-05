@@ -6,6 +6,9 @@ import helmet from 'helmet';
 import hpp from 'hpp';
 import { env } from '../config/env.js';
 
+/**
+ * Shared security, request hardening, rate limiting, and compression middleware.
+ */
 export const securityMiddleware = [
   helmet(),
   cors({

@@ -3,6 +3,9 @@ import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { verifyAccessToken } from '../utils/tokens.js';
 
+/**
+ * Authenticates Bearer access tokens and attaches the current user to the request.
+ */
 export const authenticate = asyncHandler(async (req, _res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;

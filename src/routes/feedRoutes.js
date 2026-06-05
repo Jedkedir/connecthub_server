@@ -6,6 +6,9 @@ import { feedQuerySchema } from '../validators/feedValidators.js';
 
 const router = Router();
 
+/**
+ * Feed routes require authentication before resolving feed queries.
+ */
 router.use(authenticate);
 
 router.get('/personalized', validate(feedQuerySchema, 'query'), feedController.personalized);

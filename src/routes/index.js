@@ -8,6 +8,9 @@ import userRoutes from './userRoutes.js';
 
 const router = Router();
 
+/**
+ * Versioned API route registry.
+ */
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/posts', postRoutes);

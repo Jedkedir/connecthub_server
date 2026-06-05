@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+/**
+ * Stores a pending or historical follow request between users.
+ */
 const followRequestSchema = new mongoose.Schema(
   {
     requesterId: {
@@ -29,4 +32,7 @@ followRequestSchema.index(
 );
 followRequestSchema.index({ recipientId: 1, status: 1, createdAt: -1 });
 
+/**
+ * FollowRequest model for pending follow workflows.
+ */
 export const FollowRequest = mongoose.model('FollowRequest', followRequestSchema);

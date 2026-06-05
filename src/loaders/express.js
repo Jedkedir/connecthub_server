@@ -7,6 +7,10 @@ import { securityMiddleware } from '../middleware/security.js';
 import routes from '../routes/index.js';
 import { logger } from '../utils/logger.js';
 
+/**
+ * Creates and configures the Express application pipeline.
+ * @returns {import('express').Express} Configured Express app.
+ */
 export const createExpressApp = () => {
   const app = express();
 
@@ -25,6 +29,9 @@ export const createExpressApp = () => {
     );
   }
 
+  /**
+   * Reports process health for uptime checks.
+   */
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });

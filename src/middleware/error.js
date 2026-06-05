@@ -3,6 +3,11 @@ import { env } from '../config/env.js';
 import { AppError } from '../utils/AppError.js';
 import { logger } from '../utils/logger.js';
 
+/**
+ * Converts framework and database errors into API-safe AppError instances.
+ * @param {Error} error - Raw thrown error.
+ * @returns {AppError} Normalized application error.
+ */
 const normalizeError = (error) => {
   if (error instanceof AppError) return error;
 
@@ -21,10 +26,16 @@ const normalizeError = (error) => {
   return new AppError('INTERNAL_SERVER_ERROR', 'Something went wrong.', 500);
 };
 
+/**
+ * Handles unmatched routes by forwarding a not-found AppError.
+ */
 export const notFoundHandler = (req, _res, next) => {
   next(new AppError('ROUTE_NOT_FOUND', `Route ${req.originalUrl} was not found.`, 404));
 };
 
+/**
+ * Logs and serializes errors into the public API error response shape.
+ */
 export const errorHandler = (error, req, res, _next) => {
   const normalized = normalizeError(error);
 

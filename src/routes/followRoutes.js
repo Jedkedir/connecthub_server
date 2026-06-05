@@ -6,6 +6,9 @@ import { followRequesterSchema, followTargetSchema } from '../validators/followV
 
 const router = Router();
 
+/**
+ * Follow routes require authentication before mutating or reading relationships.
+ */
 router.use(authenticate);
 
 router.post('/request', validate(followTargetSchema), followController.request);

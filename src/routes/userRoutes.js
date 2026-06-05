@@ -10,6 +10,9 @@ import {
 
 const router = Router();
 
+/**
+ * User routes require authentication before profile reads or updates.
+ */
 router.use(authenticate);
 
 router.get(

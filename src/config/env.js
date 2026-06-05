@@ -2,6 +2,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+/**
+ * Environment variable names required for server startup.
+ */
 const required = ['MONGODB_URI', 'JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET'];
 
 for (const key of required) {
@@ -10,6 +13,9 @@ for (const key of required) {
   }
 }
 
+/**
+ * Normalized runtime configuration shared by the application.
+ */
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT || 5000),
@@ -19,7 +25,7 @@ export const env = {
   jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS || 12),
-  corsOrigin: process.env.CORS_ORIGIN ||"http://localhost:5173" || '*',
+  corsOrigin: process.env.CORS_ORIGIN ||"http://localhost:5173",
   rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
   rateLimitMax: Number(process.env.RATE_LIMIT_MAX || 100)
 };

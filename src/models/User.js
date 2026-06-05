@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+/**
+ * Stores user identity, profile data, denormalized follow counts, and token hash state.
+ */
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -65,22 +68,21 @@ const userSchema = new mongoose.Schema(
 );
 userSchema.index({ fullname: 1 });
 
-// Random user name generator using pre-save hook and full name
+/**
+ * Generates a unique username from fullname before saving when needed.
+ */
 userSchema.pre("save", async function (next) {
-  // Only generate a username if it is a new document or doesn't have one yet
   if (!this.isModified("fullname") && this.username) {
     return next();
   }
 
   try {
-    // Clean fullname: lowercase and remove non-alphanumeric characters
     const baseUsername = this.fullname.toLowerCase().replace(/[^a-z0-9]/g, "");
 
     let proposedUsername = baseUsername;
     let isUnique = false;
     let suffix = 1;
 
-    // Loop until we find a username that does not exist in the database
     while (!isUnique) {
       const existingUser = await mongoose.models.User.findOne({
         username: proposedUsername,
@@ -89,7 +91,6 @@ userSchema.pre("save", async function (next) {
       if (!existingUser) {
         isUnique = true;
       } else {
-        // Append an incrementing number if a match is found (e.g., johndoe1, johndoe2)
         proposedUsername = `${baseUsername}${suffix}`;
         suffix++;
       }
@@ -102,4 +103,7 @@ userSchema.pre("save", async function (next) {
   }
 });
 
+/**
+ * User model for account and profile records.
+ */
 export const User = mongoose.model("User", userSchema);

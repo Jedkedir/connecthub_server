@@ -7,6 +7,10 @@ import { logger } from './utils/logger.js';
 
 let server;
 
+/**
+ * Connects infrastructure, registers listeners, and starts the HTTP server.
+ * @returns {Promise<void>}
+ */
 const start = async () => {
   await connectDatabase();
   initializeNotificationListeners();
@@ -17,6 +21,11 @@ const start = async () => {
   initSocketServer(server);
 };
 
+/**
+ * Gracefully closes the server and database connection before exiting.
+ * @param {string} signal - Shutdown reason or process signal.
+ * @returns {Promise<void>}
+ */
 const shutdown = async (signal) => {
   logger.warn('Shutdown signal received', { signal });
 

@@ -4,6 +4,11 @@ import { logger } from '../utils/logger.js';
 
 let io;
 
+/**
+ * Attaches Socket.IO to the HTTP server and joins users to private rooms.
+ * @param {import('http').Server} server - HTTP server instance.
+ * @returns {Server} Configured Socket.IO server.
+ */
 export const initSocketServer = (server) => {
   io = new Server(server, {
     cors: {
@@ -28,6 +33,12 @@ export const initSocketServer = (server) => {
   return io;
 };
 
+/**
+ * Emits a notification to the recipient's Socket.IO room when connected.
+ * @param {string|Object} recipientId - Recipient user ID.
+ * @param {Object} notification - Notification payload to emit.
+ * @returns {void}
+ */
 export const emitNotification = (recipientId, notification) => {
   if (!io || !recipientId) return;
   io.to(recipientId.toString()).emit('notification', notification);

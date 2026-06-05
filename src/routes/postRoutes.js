@@ -8,6 +8,9 @@ import { commentSchema, createPostSchema } from '../validators/postValidators.js
 
 const router = Router();
 
+/**
+ * Post and interaction routes require authentication.
+ */
 router.use(authenticate);
 
 router.get('/bookmarks/me', validate(paginationQuery, 'query'), interactionController.bookmarks);
@@ -24,7 +27,9 @@ router.get('/:id/comments', validate(paginationQuery, 'query'), interactionContr
 router.post('/:id/bookmark', interactionController.bookmark);
 router.delete('/:id/bookmark', interactionController.unbookmark);
 
-// New routes for comment replies and interactions
+/**
+ * Comment reply and interaction routes.
+ */
 router.get('/comments/:commentId/replies', validate(paginationQuery, 'query'), interactionController.getReplies);
 router.post('/comments/:commentId/like', interactionController.likeComment);
 router.post('/comments/:commentId/unlike', interactionController.unlikeComment);

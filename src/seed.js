@@ -11,18 +11,11 @@ import { Notification } from './models/Notification.js';
 import { Post } from './models/Post.js';
 import { User } from './models/User.js';
 import { logger } from './utils/logger.js';
+
 /**
- * User:{username,email,password,bio,profilePic}
- * Post:{content,mediaUrls}
- * Like:{postId}
- * Bookmark:{postId}
- * Comment:{postId,content}
- * FollowRequest:{toUserId}
- * Follow:{followingId}
- * Notification:{type,fromUserId,postId,commentId}
+ * Rebuilds local development data with sample users, follows, posts, and interactions.
+ * @returns {Promise<void>}
  */
-
-
 const seed = async () => {
   await connectDatabase();
 
@@ -40,7 +33,6 @@ const seed = async () => {
 
   const password = await bcrypt.hash('password!', env.bcryptSaltRounds);
 
-  //Creat Users
   const [tester1, tester2, tester3,tester4] = await User.insertMany([
     {
       username: 'tester1',
@@ -71,7 +63,7 @@ const seed = async () => {
       bio: 'Kernel notes and practical engineering.'
     }
   ]);
-  //Create Follow
+
   await Follow.create({ followerId: tester1._id, followingId: tester2._id });
   await Follow.create({ followerId: tester2._id, followingId: tester3._id });
   await Follow.create({ followerId: tester3._id, followingId: tester1._id });
@@ -79,7 +71,6 @@ const seed = async () => {
   await User.findByIdAndUpdate(tester2._id, { followersCount: 1 });
   await User.findByIdAndUpdate(tester3._id, { followersCount: 1 });
   
-  //Create Follow Request
   await FollowRequest.create({ requesterId: tester4._id, recipientId: tester1._id });
   await FollowRequest.create({ requesterId: tester4._id, recipientId: tester2._id });
   await FollowRequest.create({ requesterId: tester4._id, recipientId: tester3._id });
@@ -114,20 +105,18 @@ const seed = async () => {
     }
   ]);
   console.log('Posts created:', posts);
-  // Create Likes
+
   await Like.insertMany([
     { userId: tester1._id, postId: posts[0]._id },
     { userId: tester2._id, postId: posts[0]._id },
     { userId: tester1._id, postId: posts[1]._id }
   ]);
 
-  // Create Bookmarks
   await Bookmark.insertMany([
     { userId: tester1._id, postId: posts[1]._id },
     { userId: tester2._id, postId: posts[0]._id }
   ]);
 
-  // Create Comments
   const comments = await Comment.insertMany([
     {
       userId: tester2._id,
@@ -141,12 +130,11 @@ const seed = async () => {
     }
   ]);
 
-  // Create Comment Likes
   await CommentLike.insertMany([
     { userId: tester1._id, commentId: comments[0]._id },
     { userId: tester3._id, commentId: comments[0]._id }
   ]);
-  // Create Comment Reply
+
   await Comment.insertMany([
     {
       userId: tester3._id,

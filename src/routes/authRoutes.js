@@ -11,6 +11,9 @@ import {
 
 const router = Router();
 
+/**
+ * Authentication routes for registration, login, refresh, and password changes.
+ */
 router.post('/register', validate(registerSchema), authController.register);
 router.post('/login', validate(loginSchema), authController.login);
 router.post('/refresh', validate(refreshSchema), authController.refresh);

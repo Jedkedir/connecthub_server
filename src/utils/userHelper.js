@@ -2,10 +2,16 @@ import { User } from "../models/User.js";
 import { Post } from "../models/Post.js";
 import { FollowRequest } from "../models/FollowRequest.js";
 import { Follow } from "../models/Follow.js";
+
+/**
+ * Adds current-user follow, pending request, and post-count metadata to a user.
+ * @param {Object|null} user - Mongoose user document or plain user object.
+ * @param {string} currentUser_id - Current user used to compute relationship state.
+ * @returns {Promise<Object|null>} Hydrated user profile.
+ */
 export const hydrateUser = async (user, currentUser_id) => {
   if (!user) return user;
 
-  // Ensure we are working with a plain object if it's a Mongoose document
   const userObj = user.toObject ? user.toObject() : user;
 
   const isFollowing = await Follow.exists({
@@ -18,7 +24,6 @@ export const hydrateUser = async (user, currentUser_id) => {
     recipientId: user._id,
     status: "pending",
   });
-  // Add the number of posts from this user
   const postCount = await Post.countDocuments({ authorId: user._id });
   return {
     ...userObj,

@@ -6,34 +6,55 @@ import { Like } from "../models/Like.js";
 import { buildCreatedAtCursorFilter } from "../utils/pagination.js";
 import { hydratePostInteractions } from "../utils/postHelper.js";
 import { hydrateComment, hydrateComments } from "../utils/commentHelper.js";
-// Helper function to populate user info
+
+/**
+ * Adds the standard user projection to comment queries.
+ * @param {import('mongoose').Query} query - Comment query to populate.
+ * @returns {import('mongoose').Query} Populated query.
+ */
 const populateCommentUser = (query) => {
   return query.populate("userId", "fullname username profilePic");
 };
+
+/**
+ * Encapsulates interaction persistence operations for likes, comments, and bookmarks.
+ */
 export const interactionRepository = {
+  /**
+   * Creates a post like.
+   */
   createLike: (userId, postId) => Like.create({ userId, postId }),
+  /**
+   * Deletes a post like.
+   */
   deleteLike: (userId, postId) => Like.findOneAndDelete({ userId, postId }),
+  /**
+   * Creates a comment document.
+   */
   createComment: (data) => Comment.create(data),
 
-  // Updated findCommentsByPost with hydration
+  /**
+   * Finds paginated top-level comments for a post and hydrates replies.
+   */
   findCommentsByPost: async (postId, cursor, limit, userId = null) => {
     const comments = await populateCommentUser(
       Comment.find({
         postId,
-        parentCommentId: null, // Only get top-level comments
+        parentCommentId: null,
         ...buildCreatedAtCursorFilter(cursor),
       })
         .sort({ createdAt: -1, _id: -1 })
         .limit(limit + 1),
     );
 
-    // Hydrate comments with their replies
     const hydratedComments = await hydrateComments(comments, userId);
 
     return hydratedComments;
   },
 
-  // New method: Find replies for a specific comment
+  /**
+   * Finds paginated replies for a comment and adds current-user like state.
+   */
   findRepliesByComment: async (commentId, cursor, limit, userId = null) => {
     const replies = await populateCommentUser(
       Comment.find({
@@ -44,7 +65,6 @@ export const interactionRepository = {
         .limit(limit + 1),
     );
 
-    // Add like info to replies
     const repliesWithLikes = await Promise.all(
       replies.map(async (reply) => {
         const replyObj = reply.toObject();
@@ -65,44 +85,68 @@ export const interactionRepository = {
     return repliesWithLikes;
   },
 
-  // Find comment by ID with hydration
+  /**
+   * Finds a comment by ID and hydrates replies and like state.
+   */
   findCommentById: async (commentId, userId = null) => {
     const comment = await populateCommentUser(Comment.findById(commentId));
     return await hydrateComment(comment, userId);
   },
 
-  // Create a reply
+  /**
+   * Creates a reply comment.
+   */
   createReply: (data) => Comment.create(data),
 
-  // Increment reply count
+  /**
+   * Adjusts a comment's reply count.
+   */
   incrementReplyCount: (commentId, increment) =>
     Comment.findByIdAndUpdate(
       commentId,
       { $inc: { replyCount: increment } },
       { new: true },
     ),
-  // Count replies for a comment
+  /**
+   * Counts replies for a comment.
+   */
   countReplies: (commentId) =>
     Comment.countDocuments({ parentCommentId: commentId }),
 
-  // Comment like methods
+  /**
+   * Creates a comment like.
+   */
   createCommentLike: (userId, commentId) =>
     CommentLike.create({ userId, commentId }),
+  /**
+   * Adjusts a comment's like count.
+   */
   incrementCommentLikeCount: (commentId, amount) =>
     Comment.findByIdAndUpdate(
       commentId,
       { $inc: { likeCount: amount } },
       { new: true },
     ),
+  /**
+   * Deletes a comment like.
+   */
   deleteCommentLike: (userId, commentId) =>
     CommentLike.findOneAndDelete({ userId, commentId }),
 
+  /**
+   * Checks whether a user liked a comment.
+   */
   isCommentLikedByUser: (userId, commentId) =>
     CommentLike.exists({ userId, commentId }),
 
+  /**
+   * Counts likes for a comment.
+   */
   getCommentLikeCount: (commentId) => CommentLike.countDocuments({ commentId }),
 
-  // Update comment
+  /**
+   * Updates a comment when it belongs to the supplied user.
+   */
   updateComment: (commentId, userId, content) =>
     Comment.findOneAndUpdate(
       { _id: commentId, userId },
@@ -110,29 +154,39 @@ export const interactionRepository = {
       { new: true },
     ).populate("userId", "fullname username profilePic"),
 
-  // Delete comment and its replies
+  /**
+   * Deletes a comment, its direct replies, and all related likes.
+   */
   deleteComment: async (commentId) => {
-    // Get all reply IDs first
     const replies = await Comment.find({ parentCommentId: commentId });
     const replyIds = replies.map((r) => r._id);
 
-    // Delete all replies and their likes
     await CommentLike.deleteMany({ commentId: { $in: replyIds } });
     await Comment.deleteMany({ parentCommentId: commentId });
 
-    // Delete the main comment and its likes
     await CommentLike.deleteMany({ commentId });
     return Comment.findByIdAndDelete(commentId);
   },
 
+  /**
+   * Counts top-level comments for a post.
+   */
   getCommentCountByPost: (postId) =>
     Comment.countDocuments({ postId, parentCommentId: null }),
 
-  // Existing methods (unchanged)
+  /**
+   * Creates a bookmark.
+   */
   createBookmark: (userId, postId) => Bookmark.create({ userId, postId }),
+  /**
+   * Deletes a bookmark.
+   */
   deleteBookmark: (userId, postId) =>
     Bookmark.findOneAndDelete({ userId, postId }),
 
+  /**
+   * Finds paginated bookmarks and hydrates the referenced posts.
+   */
   findBookmarksByUser: async (userId, cursor, limit) => {
     let bookmarks = await Bookmark.find({
       userId,
@@ -144,7 +198,7 @@ export const interactionRepository = {
         path: "postId",
         populate: { path: "authorId", select: "fullname username profilePic" },
       });
-    bookmarks = bookmarks.filter((b) => b.postId); // Filter out bookmarks with missing posts
+    bookmarks = bookmarks.filter((b) => b.postId);
     const posts = bookmarks.map((b) => b.postId).filter(Boolean);
     const hydratedPosts = await hydratePostInteractions(posts, userId);
 
@@ -159,6 +213,9 @@ export const interactionRepository = {
     });
   },
 
+  /**
+   * Finds paginated liked posts and hydrates the referenced posts.
+   */
   findLikedPostsByUser: async (userId, cursor, limit) => {
     let likes = await Like.find({
       userId,
@@ -170,7 +227,7 @@ export const interactionRepository = {
         path: "postId",
         populate: { path: "authorId", select: "fullname username profilePic" },
       });
-    likes = likes.filter((like) => like.postId); // Filter out likes with missing posts
+    likes = likes.filter((like) => like.postId);
     const posts = likes.map((l) => l.postId).filter(Boolean);
     const hydratedPosts = await hydratePostInteractions(posts, userId);
     return likes.map((like) => {

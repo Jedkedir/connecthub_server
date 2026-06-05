@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+/**
+ * Stores a user's saved post relationship.
+ */
 const bookmarkSchema = new mongoose.Schema(
   {
     userId: {
@@ -21,4 +24,7 @@ const bookmarkSchema = new mongoose.Schema(
 bookmarkSchema.index({ userId: 1, postId: 1 }, { unique: true });
 bookmarkSchema.index({ userId: 1, createdAt: -1 });
 
+/**
+ * Bookmark model for saved posts.
+ */
 export const Bookmark = mongoose.model('Bookmark', bookmarkSchema);

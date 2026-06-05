@@ -10,11 +10,27 @@ import { emitNotification } from "../loaders/socket.js";
 
 let listenersInitialized = false;
 
+/**
+ * Checks whether a notification would target the same user that triggered it.
+ * @param {string|Object} senderId - Event sender ID.
+ * @param {string|Object} recipientId - Event recipient ID.
+ * @returns {boolean} True when sender and recipient are the same user.
+ */
 const isSelfNotification = (senderId, recipientId) =>
   senderId?.toString() === recipientId?.toString();
 
+/**
+ * Detects MongoDB duplicate-key errors from unique notification dedupe keys.
+ * @param {Error} error - Error thrown by Mongoose or MongoDB.
+ * @returns {boolean} True when the error is a duplicate-key conflict.
+ */
 const isDuplicateKey = (error) => error?.code === 11000;
 
+/**
+ * Persists and emits a notification after validating referenced resources.
+ * @param {Object} payload - Notification creation payload.
+ * @returns {Promise<Object|null>} Created notification or null when skipped.
+ */
 const createNotification = async ({
   recipientId,
   senderId,
@@ -57,6 +73,12 @@ const createNotification = async ({
   }
 };
 
+/**
+ * Registers one event listener and logs asynchronous handler failures.
+ * @param {string} eventName - Domain event name.
+ * @param {Function} handler - Event data handler.
+ * @returns {void}
+ */
 const runListener = (eventName, handler) => {
   eventBus.on(eventName, (event) => {
     Promise.resolve(handler(event.data ?? event)).catch((error) => {
@@ -69,6 +91,10 @@ const runListener = (eventName, handler) => {
   });
 };
 
+/**
+ * Registers notification event listeners once for the process lifetime.
+ * @returns {void}
+ */
 export const initializeNotificationListeners = () => {
   if (listenersInitialized) return;
   listenersInitialized = true;
@@ -164,7 +190,13 @@ export const initializeNotificationListeners = () => {
   );
 };
 
+/**
+ * Contains notification retrieval and read-state business operations.
+ */
 export const notificationService = {
+  /**
+   * Returns paginated notifications for a recipient.
+   */
   getNotifications: async (userId, query) => {
     const limit = getLimit(query.limit, 50, 50);
     const notifications = await notificationRepository.findByRecipient(
@@ -175,6 +207,9 @@ export const notificationService = {
     return postService.toPaginationResult(notifications, limit);
   },
 
+  /**
+   * Marks one owned notification as read.
+   */
   markRead: async (userId, notificationId) => {
     const notification = await notificationRepository.markRead(
       notificationId,
@@ -190,10 +225,16 @@ export const notificationService = {
     return notification;
   },
 
+  /**
+   * Marks all unread notifications for a user as read.
+   */
   markAllRead: async (userId) => {
     const result = await notificationRepository.markAllRead(userId);
     return { modifiedCount: result.modifiedCount };
   },
+  /**
+   * Deletes one owned notification.
+   */
   deleteNotification: async (userId, notificationId) => {
     const result = await notificationRepository.deleteNotification(
       notificationId,

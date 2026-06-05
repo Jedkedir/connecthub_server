@@ -19,7 +19,6 @@ const logger = winston.createLogger({
   exitOnError: false
 });
 
-// In non-production, also log to the console with a readable format
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
     format: combine(timestamp(), printf(({ timestamp, level, message, stack, ...meta }) => {
@@ -30,11 +29,12 @@ if (process.env.NODE_ENV !== 'production') {
   }));
 }
 
-// Morgan middleware to log HTTP requests via winston
+/**
+ * Express middleware that forwards Morgan HTTP logs to Winston.
+ */
 const morganMiddleware = morgan('combined', {
   stream: {
     write: (message) => {
-      // morgan outputs a trailing newline
       logger.info(message.trim());
     }
   }

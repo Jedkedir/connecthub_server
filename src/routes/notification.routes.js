@@ -6,6 +6,9 @@ import { paginationQuery } from '../validators/commonValidators.js';
 
 const router = Router();
 
+/**
+ * Notification routes require authentication before reading or mutating records.
+ */
 router.use(authenticate);
 
 router.get('/', validate(paginationQuery, 'query'), notificationController.getNotifications);

@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+/**
+ * Stores a user's like relationship with a post.
+ */
 const likeSchema = new mongoose.Schema(
   {
     userId: {
@@ -21,4 +24,7 @@ const likeSchema = new mongoose.Schema(
 likeSchema.index({ userId: 1, postId: 1 }, { unique: true });
 likeSchema.index({ postId: 1, createdAt: -1 });
 
+/**
+ * Like model for post like relationships.
+ */
 export const Like = mongoose.model('Like', likeSchema);

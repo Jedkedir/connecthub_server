@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+/**
+ * Stores authored social posts, media links, topics, and interaction counters.
+ */
 const postSchema = new mongoose.Schema(
   {
     authorId: {
@@ -54,4 +57,7 @@ postSchema.index({ content: "text" });
 postSchema.index({ topics: 1 });
 postSchema.index({ likesCount: -1, commentsCount: -1, viewCount: -1 });
 
+/**
+ * Post model for feed and profile content.
+ */
 export const Post = mongoose.model("Post", postSchema);

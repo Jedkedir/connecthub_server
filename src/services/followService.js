@@ -7,6 +7,12 @@ import { followRepository } from "../repositories/followRepository.js";
 import { userRepository } from "../repositories/userRepository.js";
 import { AppError } from "../utils/AppError.js";
 
+/**
+ * Prevents a user from following or requesting themselves.
+ * @param {string} actorId - Acting user ID.
+ * @param {string} targetId - Target user ID.
+ * @returns {void}
+ */
 const ensureDifferentUsers = (actorId, targetId) => {
   if (actorId.toString() === targetId.toString()) {
     throw new AppError(
@@ -17,6 +23,11 @@ const ensureDifferentUsers = (actorId, targetId) => {
   }
 };
 
+/**
+ * Loads a target user or raises the API not-found error.
+ * @param {string} userId - Target user ID.
+ * @returns {Promise<Object>} User profile.
+ */
 const ensureUserExists = async (userId) => {
   const user = await userRepository.findById(userId);
   if (!user)
@@ -24,9 +35,20 @@ const ensureUserExists = async (userId) => {
   return user;
 };
 
+/**
+ * Detects MongoDB duplicate-key errors from unique indexes.
+ * @param {Error} error - Error thrown by Mongoose or MongoDB.
+ * @returns {boolean} True when the error is a duplicate-key conflict.
+ */
 const isDuplicateKey = (error) => error?.code === 11000;
 
+/**
+ * Contains follow request and relationship business operations.
+ */
 export const followService = {
+  /**
+   * Sends a follow request and emits a recipient notification.
+   */
   sendRequest: async (requesterId, targetUserId) => {
     ensureDifferentUsers(requesterId, targetUserId);
     await ensureUserExists(targetUserId);
@@ -68,6 +90,9 @@ export const followService = {
     }
   },
 
+  /**
+   * Accepts a pending request, creates the follow relation, and updates counters.
+   */
   acceptRequest: async (recipientId, requesterId) => {
     ensureDifferentUsers(recipientId, requesterId);
 
@@ -111,6 +136,9 @@ export const followService = {
     };
   },
 
+  /**
+   * Rejects and removes a pending follow request.
+   */
   rejectRequest: async (recipientId, requesterId) => {
     ensureDifferentUsers(recipientId, requesterId);
     const request = await followRepository.consumePendingRequest(
@@ -131,6 +159,9 @@ export const followService = {
     };
   },
 
+  /**
+   * Deletes an existing follow relationship and updates counters.
+   */
   unfollow: async (followerId, targetUserId) => {
     ensureDifferentUsers(followerId, targetUserId);
     const deleted = await followRepository.deleteFollow(
@@ -149,10 +180,16 @@ export const followService = {
     await userRepository.incrementFollowers(targetUserId, -1);
     return { unfollowed: true };
   },
+  /**
+   * Returns followers for a user with current relationship state.
+   */
   getFollowers: async (userId) => {
     const followers = await followRepository.getFollowers(userId);
     return followers;
   },
+  /**
+   * Returns users followed by a user with current relationship state.
+   */
   getFollowing: async (userId) => {
     const following = await followRepository.getFollowing(userId);
     return following;
